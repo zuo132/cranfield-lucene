@@ -80,7 +80,7 @@ public class QueryIndex
             // Write search results to the results file
             for (int i = 0; i < hits.length; i++) {
                 Document doc = isearcher.doc(hits[i].doc);
-                writer.println(index + " 0 " + doc.get("id") + " " + i + " " + hits[i].score + " EnglishAnalyzer");
+                writer.println(index + " 0 " + doc.get("id") + " " + i + " " + hits[i].score + " BM25");
             }
 
             index++;
@@ -89,6 +89,7 @@ public class QueryIndex
         // close everything we used
         ireader.close();
         directory.close();
+        writer.close();
 
         System.out.println("Complete");
     }
