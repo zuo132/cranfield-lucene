@@ -7,12 +7,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -28,13 +31,17 @@ public class CreateIndex
     public static void main(String[] args) throws IOException
     {
         // Analyzer that is used to process TextField
-        Analyzer analyzer = new StandardAnalyzer();
+        // Analyzer analyzer = new StandardAnalyzer();
+        Analyzer analyzer = new EnglishAnalyzer();;
 
         // To store an index in memory
         // Directory directory = new RAMDirectory();
         // To store an index on disk
         Directory directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
+
+        // Use BM25 scoring approach
+        config.setSimilarity(new BM25Similarity());
 
         // Index opening mode
         // IndexWriterConfig.OpenMode.CREATE = create a new index
@@ -50,15 +57,17 @@ public class CreateIndex
 
         // ArrayList of documents in the corpus
         ArrayList<Document> documents = new ArrayList<Document>();
-
+        int index = 1;
         String currentLine = reader.readLine();
         while(currentLine != null) {
+            System.out.println("Indexing document " + index);
+
             // Create a new document
             Document doc = new Document();
 
             // Read and process each section of a document
             if (currentLine.startsWith(".I")) {
-                doc.add(new TextField("id", currentLine.substring(3), Field.Store.YES));
+                doc.add(new StringField("id", currentLine.substring(3), Field.Store.YES));
                 currentLine = reader.readLine();
             }
 
@@ -112,6 +121,7 @@ public class CreateIndex
 
             // Add the file to our linked list
             documents.add(doc);
+            index++;
         }
 
         // Write all the documents in the linked list to the search index

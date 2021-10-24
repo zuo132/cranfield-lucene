@@ -7,7 +7,9 @@ import java.nio.file.Paths;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.index.DirectoryReader;
@@ -38,14 +40,21 @@ public class QueryIndex
         DirectoryReader ireader = DirectoryReader.open(directory);
         IndexSearcher isearcher = new IndexSearcher(ireader);
 
+        // Use BM25 scoring approach
+        isearcher.setSimilarity(new BM25Similarity());
+
         // Analyzer that is used to process the queries
-        Analyzer analyzer = new StandardAnalyzer();
+        // Analyzer analyzer = new StandardAnalyzer();
+        Analyzer analyzer = new EnglishAnalyzer();
+
+        // Query parser suited to search multiple field
         MultiFieldQueryParser parser = new MultiFieldQueryParser(new String[]{"title", "author", "bibliography", "words"}, analyzer);
 
         BufferedReader reader = new BufferedReader(new FileReader(QUERIES_DIRECTORY));
         PrintWriter writer = new PrintWriter(RESULTS_DIRECTORY, "UTF-8");
         System.out.println("Parsing queries and producing search results ...");
 
+        // Read and process queries
         int index = 1;
         String currentLine = reader.readLine();
         while (currentLine != null) {
@@ -71,7 +80,7 @@ public class QueryIndex
             // Write search results to the results file
             for (int i = 0; i < hits.length; i++) {
                 Document doc = isearcher.doc(hits[i].doc);
-                writer.println(index + " 0 " + doc.get("id") + " " + i + " " + hits[i].score + " KAVITH");
+                writer.println(index + " 0 " + doc.get("id") + " " + i + " " + hits[i].score + " EnglishAnalyzer");
             }
 
             index++;
