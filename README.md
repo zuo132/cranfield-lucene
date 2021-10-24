@@ -1,4 +1,4 @@
-> To run the program
+> To run the program (requires root user: sudo su -)
 
 1. Install dependencies
 
